@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"log"
+	"os"
 )
 
 const (
@@ -23,10 +26,37 @@ func PrintTask(pTask Task) {
 	} else {
 		fmt.Printf(GreenColor, "☑ "+fmt.Sprint(pTask.id)+". "+pTask.description)
 	}
+	fmt.Printf("\n")
 
 }
 
+func LoadTasks(pFilePath string) []Task {
+	var tasks []Task
+	var index uint16
+	file, err := os.Open(pFilePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	index = 1
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		task := Task{id: index, description: scanner.Text()}
+		tasks = append(tasks, task)
+		index++
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return tasks
+}
+
 func main() {
-	t := Task{id: 1, description: "Je suis une tache.", status: true}
-	PrintTask(t)
+	tasks := LoadTasks("test.txt")
+	for _, task := range tasks {
+		PrintTask(task)
+	}
 }

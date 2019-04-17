@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
+// ANSI Strings for colored output
 const (
 	RedColor   = "\033[1;31m%s\033[0m"
 	GreenColor = "\033[1;32m%s\033[0m"
@@ -30,6 +32,7 @@ func PrintTask(pTask Task) {
 
 }
 
+// LoadTasks : Return an array of Tasks from the file passed in parameter
 func LoadTasks(pFilePath string) []Task {
 	var tasks []Task
 	var index uint16
@@ -42,8 +45,22 @@ func LoadTasks(pFilePath string) []Task {
 	index = 1
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		task := Task{id: index, description: scanner.Text()}
-		tasks = append(tasks, task)
+		parts := strings.Split(scanner.Text(), " ")
+		if len(parts) == 1 {
+			task := Task{id: index, description: parts[0], status: false}
+			tasks = append(tasks, task)
+		} else if len(parts) > 1 {
+			task := Task{id: index}
+			if strings.Compare(parts[0], "X") == 0 {
+				task.status = true
+			} else {
+				task.status = false
+			}
+			for index := 1; index < len(parts); index++ {
+				task.description += " " + parts[index]
+			}
+			tasks = append(tasks, task)
+		}
 		index++
 	}
 

@@ -53,11 +53,14 @@ func LoadTasks(pFilePath string) []Task {
 			task := Task{id: index}
 			if strings.Compare(parts[0], "X") == 0 {
 				task.status = true
+				for index := 1; index < len(parts); index++ {
+					task.description += " " + parts[index]
+				}
 			} else {
 				task.status = false
-			}
-			for index := 1; index < len(parts); index++ {
-				task.description += " " + parts[index]
+				for index := 0; index < len(parts); index++ {
+					task.description += " " + parts[index]
+				}
 			}
 			tasks = append(tasks, task)
 		}
@@ -71,6 +74,18 @@ func LoadTasks(pFilePath string) []Task {
 	return tasks
 }
 
+func AddTask(pFilePath string, pLineToParse string) {
+	file, err := os.OpenFile("test.txt", os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	writer := bufio.NewWriter(file)
+	writer.WriteString(pLineToParse + "\n")
+	writer.Flush()
+}
+
 func main() {
 	args := os.Args[1:]
 	if len(args) > 0 {
@@ -80,6 +95,8 @@ func main() {
 			for _, task := range tasks {
 				PrintTask(task)
 			}
+		} else if args[0] == "add" && len(args) > 1 {
+			AddTask("test.txt", args[1])
 		}
 	}
 }

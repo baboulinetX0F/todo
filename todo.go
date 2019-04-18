@@ -72,8 +72,14 @@ func LoadTasks(pFilePath string) []Task {
 }
 
 func main() {
-	tasks := LoadTasks("test.txt")
-	for _, task := range tasks {
-		PrintTask(task)
+	args := os.Args[1:]
+	if len(args) > 0 {
+		if args[0] == "ls" {
+			fmt.Println("Task List :")
+			tasks := LoadTasks("test.txt")
+			for _, task := range tasks {
+				PrintTask(task)
+			}
+		}
 	}
 }

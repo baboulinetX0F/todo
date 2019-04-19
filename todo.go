@@ -19,6 +19,7 @@ type Task struct {
 	id          uint16
 	description string
 	status      bool
+	tags        []string
 }
 
 // PrintTask : Print to the right format the task passed in parameter
@@ -51,6 +52,8 @@ func LoadTasks(pFilePath string) []Task {
 			tasks = append(tasks, task)
 		} else if len(parts) > 1 {
 			task := Task{id: index}
+
+			// If task is marked as done (first part = X)
 			if strings.Compare(parts[0], "X") == 0 {
 				task.status = true
 				for index := 1; index < len(parts); index++ {
@@ -59,9 +62,14 @@ func LoadTasks(pFilePath string) []Task {
 			} else {
 				task.status = false
 				for index := 0; index < len(parts); index++ {
+					// if part is a tag
+					if parts[index][0] == '+' {
+						task.tags = append(task.tags, parts[index])
+					}
 					task.description += " " + parts[index]
 				}
 			}
+
 			tasks = append(tasks, task)
 		}
 		index++
@@ -74,6 +82,7 @@ func LoadTasks(pFilePath string) []Task {
 	return tasks
 }
 
+// AddTask : Add the task passed in parameter to the todo file
 func AddTask(pFilePath string, pLineToParse string) {
 	file, err := os.OpenFile("test.txt", os.O_APPEND|os.O_WRONLY, 0666)
 	if err != nil {
@@ -81,6 +90,7 @@ func AddTask(pFilePath string, pLineToParse string) {
 	}
 	defer file.Close()
 
+	// TODO: Add parsing of line passed in parameter
 	writer := bufio.NewWriter(file)
 	writer.WriteString(pLineToParse + "\n")
 	writer.Flush()

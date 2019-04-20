@@ -123,9 +123,8 @@ func AddTask(pFilePath string, pLineToParse string) {
 
 // ValidateTask : Mark as done the task with the id passed in paramater
 func ValidateTask(pID uint16) {
-	// FIXME: avoid out of range error with pID
 	tasks := LoadTasks("test.txt")
-	if pID > uint16(len(tasks)) {
+	if pID > uint16(len(tasks)) || pID <= 0 {
 		log.Println("ValidateTask : index out of range")
 	} else {
 		tasks[pID-1].status = true
@@ -136,17 +135,20 @@ func ValidateTask(pID uint16) {
 
 // TODO: ArchiveTasks function (archive all tasks done into another file)
 
-// TODO: ListTasks function with filters (by tags or content)
+func ListTasks() {
+	// TODO: Add filtering by tags
+	fmt.Println("Task List :")
+	tasks := LoadTasks("test.txt")
+	for _, task := range tasks {
+		PrintTask(task)
+	}
+}
 
 func main() {
 	args := os.Args[1:]
 	if len(args) > 0 {
 		if args[0] == "ls" {
-			fmt.Println("Task List :")
-			tasks := LoadTasks("test.txt")
-			for _, task := range tasks {
-				PrintTask(task)
-			}
+			ListTasks()
 		} else if args[0] == "add" && len(args) > 1 {
 			AddTask("test.txt", args[1])
 		} else if args[0] == "do" && len(args) > 1 {

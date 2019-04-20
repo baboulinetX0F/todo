@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -57,16 +58,22 @@ func LoadTasks(pFilePath string) []Task {
 			if strings.Compare(parts[0], "X") == 0 {
 				task.status = true
 				for index := 1; index < len(parts); index++ {
-					task.description += " " + parts[index]
+					if index > 1 {
+						task.description += " "
+					}
+					task.description += parts[index]
 				}
 			} else {
 				task.status = false
 				for index := 0; index < len(parts); index++ {
 					// if part is a tag
-					if parts[index][0] == '+' {
+					if len(parts[index]) > 0 && parts[index][0] == '+' {
 						task.tags = append(task.tags, parts[index])
 					}
-					task.description += " " + parts[index]
+					if index > 0 {
+						task.description += " "
+					}
+					task.description += parts[index]
 				}
 			}
 
@@ -80,6 +87,24 @@ func LoadTasks(pFilePath string) []Task {
 	}
 
 	return tasks
+}
+
+// SaveTasks : Write the pFilePath file with the contents of the Tasks Array
+func SaveTasks(pTasks []Task, pFilePath string) {
+	file, err := os.OpenFile("test.txt", os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	writer := bufio.NewWriter(file)
+	for _, task := range pTasks {
+		if task.status {
+			writer.WriteString("X ")
+		}
+		writer.WriteString(task.description + "\n")
+	}
+	writer.Flush()
 }
 
 // AddTask : Add the task passed in parameter to the todo file
@@ -96,6 +121,23 @@ func AddTask(pFilePath string, pLineToParse string) {
 	writer.Flush()
 }
 
+// ValidateTask : Mark as done the task with the id passed in paramater
+func ValidateTask(pID uint16) {
+	// FIXME: avoid out of range error with pID
+	tasks := LoadTasks("test.txt")
+	if pID > uint16(len(tasks)) {
+		log.Println("ValidateTask : index out of range")
+	} else {
+		tasks[pID-1].status = true
+	}
+
+	SaveTasks(tasks, "test.txt")
+}
+
+// TODO: ArchiveTasks function (archive all tasks done into another file)
+
+// TODO: ListTasks function with filters (by tags or content)
+
 func main() {
 	args := os.Args[1:]
 	if len(args) > 0 {
@@ -107,6 +149,13 @@ func main() {
 			}
 		} else if args[0] == "add" && len(args) > 1 {
 			AddTask("test.txt", args[1])
+		} else if args[0] == "do" && len(args) > 1 {
+			id, casterr := strconv.ParseUint(args[1], 10, 16)
+			if casterr != nil {
+				log.Fatal(casterr)
+			} else {
+				ValidateTask(uint16(id))
+			}
 		}
 	}
 }

@@ -121,13 +121,13 @@ func AddTask(pFilePath string, pLineToParse string) {
 	writer.Flush()
 }
 
-// ValidateTask : Mark as done the task with the id passed in paramater
-func ValidateTask(pID uint16) {
+// SetTaskStatus : Mark as done the task with the id passed in paramater
+func SetTaskStatus(pID uint16, pNewState bool) {
 	tasks := LoadTasks("test.txt")
 	if pID > uint16(len(tasks)) || pID <= 0 {
 		log.Println("ValidateTask : index out of range")
 	} else {
-		tasks[pID-1].status = true
+		tasks[pID-1].status = pNewState
 	}
 
 	SaveTasks(tasks, "test.txt")
@@ -156,7 +156,7 @@ func main() {
 			if casterr != nil {
 				log.Fatal(casterr)
 			} else {
-				ValidateTask(uint16(id))
+				SetTaskStatus(uint16(id), true)
 			}
 		}
 	}

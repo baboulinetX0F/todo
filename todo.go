@@ -92,17 +92,21 @@ func LoadTasks(pFilePath string) []Task {
 // SaveTasks : Write the pFilePath file with the contents of the Tasks Array
 func SaveTasks(pTasks []Task, pFilePath string) {
 	file, err := os.OpenFile("test.txt", os.O_WRONLY, 0666)
+	file.Truncate(0)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
 
 	writer := bufio.NewWriter(file)
-	for _, task := range pTasks {
+	for idx, task := range pTasks {
 		if task.status {
 			writer.WriteString("X ")
 		}
-		writer.WriteString(task.description + "\n")
+		writer.WriteString(task.description)
+		if idx+1 != len(pTasks) {
+			writer.WriteString("\n")
+		}
 	}
 	writer.Flush()
 }
@@ -151,12 +155,16 @@ func main() {
 			ListTasks()
 		} else if args[0] == "add" && len(args) > 1 {
 			AddTask("test.txt", args[1])
-		} else if args[0] == "do" && len(args) > 1 {
+		} else if (args[0] == "do" || args[0] == "undo") && len(args) > 1 {
 			id, casterr := strconv.ParseUint(args[1], 10, 16)
 			if casterr != nil {
 				log.Fatal(casterr)
 			} else {
-				SetTaskStatus(uint16(id), true)
+				if args[0] == "do" {
+					SetTaskStatus(uint16(id), true)
+				} else {
+					SetTaskStatus(uint16(id), false)
+				}
 			}
 		}
 	}

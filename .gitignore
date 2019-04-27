@@ -1,2 +1,5 @@
 # All text files used for testing in src dir
 *.txt
+
+# Visual Studio Code directories
+.vscode/

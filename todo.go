@@ -23,6 +23,10 @@ type Task struct {
 	tags        []string
 }
 
+var todo_dir_path string
+var todo_file_path string
+var todo_archive_path string
+
 // PrintTask : Print to the right format the task passed in parameter
 func PrintTask(pTask Task) {
 	if pTask.status == false {
@@ -95,7 +99,7 @@ func LoadTasks(pFilePath string) []Task {
 
 // SaveTasks : Write the pFilePath file with the contents of the Tasks Array
 func SaveTasks(pTasks []Task, pFilePath string) {
-	file, err := os.OpenFile("todo.txt", os.O_WRONLY, 0666)
+	file, err := os.OpenFile(todo_file_path, os.O_WRONLY|os.O_CREATE, 0666)
 	file.Truncate(0)
 	if err != nil {
 		log.Fatal(err)
@@ -114,7 +118,7 @@ func SaveTasks(pTasks []Task, pFilePath string) {
 
 // AddTask : Add the task passed in parameter to the todo file
 func AddTask(pFilePath string, pLineToParse string) {
-	file, err := os.OpenFile("todo.txt", os.O_APPEND|os.O_WRONLY, 0666)
+	file, err := os.OpenFile(todo_file_path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -128,22 +132,22 @@ func AddTask(pFilePath string, pLineToParse string) {
 
 // SetTaskStatus : Mark as done the task with the id passed in paramater
 func SetTaskStatus(pID uint16, pNewState bool) {
-	tasks := LoadTasks("todo.txt")
+	tasks := LoadTasks(todo_file_path)
 	if pID > uint16(len(tasks)) || pID <= 0 {
 		log.Println("ValidateTask : index out of range")
 	} else {
 		tasks[pID-1].status = pNewState
 	}
 
-	SaveTasks(tasks, "todo.txt")
+	SaveTasks(tasks, todo_file_path)
 }
 
 // ArchiveTasks : remove all tasks done and store them in the archive file
 func ArchiveTasks() {
-	tasks := LoadTasks("todo.txt")
+	tasks := LoadTasks(todo_file_path)
 
 	// Open / Create archive file
-	file, err := os.OpenFile("archive.txt", os.O_APPEND|os.O_WRONLY, 0666)
+	file, err := os.OpenFile(todo_archive_path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -157,13 +161,13 @@ func ArchiveTasks() {
 		}
 	}
 	writer.Flush()
-	SaveTasks(tasks, "todo.txt")
+	SaveTasks(tasks, todo_file_path)
 }
 
 // ListTasks : Display a list of all the tasks
 func ListTasks() {
 	fmt.Println("Task List :")
-	tasks := LoadTasks("todo.txt")
+	tasks := LoadTasks(todo_file_path)
 	for _, task := range tasks {
 		PrintTask(task)
 	}
@@ -171,7 +175,7 @@ func ListTasks() {
 
 func ListTasksFiltered(searchTags []string) {
 	fmt.Println("Task List :")
-	tasks := LoadTasks("todo.txt")
+	tasks := LoadTasks(todo_file_path)
 	for _, task := range tasks {
 		displayTask := true
 		for filterIdx := range searchTags {
@@ -194,6 +198,8 @@ func ListTasksFiltered(searchTags []string) {
 }
 
 func Init() {
+	// TODO: Support for custom configuration
+
 	// Get home directory environnement variable
 	homeDir := os.Getenv("HOME")
 
@@ -203,11 +209,16 @@ func Init() {
 		fmt.Println("INFO : Creating " + homeDir + "/.todo directory")
 		os.Mkdir(homeDir+"/.todo", os.ModePerm)
 	}
+
+	todo_dir_path = homeDir + "/.todo"
+	todo_file_path = todo_dir_path + "/todo.txt"
+	todo_archive_path = todo_dir_path + "/archive.txt"
 }
 
 func main() {
 	Init()
 	args := os.Args[1:]
+	// TODO: Move args to function parsing outside of main
 	if len(args) > 0 {
 		if args[0] == "ls" {
 			if len(args) > 1 {
@@ -218,7 +229,7 @@ func main() {
 		} else if args[0] == "archive" {
 			ArchiveTasks()
 		} else if args[0] == "add" && len(args) > 1 {
-			AddTask("todo.txt", args[1])
+			AddTask(todo_file_path, args[1])
 		} else if (args[0] == "do" || args[0] == "undo") && len(args) > 1 {
 			id, casterr := strconv.ParseUint(args[1], 10, 16)
 			if casterr != nil {

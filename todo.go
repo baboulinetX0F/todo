@@ -99,14 +99,11 @@ func SaveTasks(pTasks []Task, pFilePath string) {
 	defer file.Close()
 
 	writer := bufio.NewWriter(file)
-	for idx, task := range pTasks {
+	for _, task := range pTasks {
 		if task.status {
 			writer.WriteString("X ")
 		}
-		writer.WriteString(task.description)
-		if idx+1 != len(pTasks) {
-			writer.WriteString("\n")
-		}
+		writer.WriteString(task.description + "\n")
 	}
 	writer.Flush()
 }
@@ -138,7 +135,11 @@ func SetTaskStatus(pID uint16, pNewState bool) {
 }
 
 // TODO: ArchiveTasks function (archive all tasks done into another file)
+func ArchiveTasks() {
 
+}
+
+// ListTasks : Display a list of all the tasks
 func ListTasks() {
 	// TODO: Add filtering by tags
 	fmt.Println("Task List :")

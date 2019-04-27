@@ -134,9 +134,26 @@ func SetTaskStatus(pID uint16, pNewState bool) {
 	SaveTasks(tasks, "test.txt")
 }
 
-// TODO: ArchiveTasks function (archive all tasks done into another file)
+// ArchiveTasks : remove all tasks done and store them in the archive file
 func ArchiveTasks() {
+	tasks := LoadTasks("test.txt")
 
+	// Open / Create archive file
+	file, err := os.OpenFile("archive.txt", os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	writer := bufio.NewWriter(file)
+	for i := len(tasks) - 1; i >= 0; i-- {
+		if tasks[i].status {
+			writer.WriteString("X " + tasks[i].description + "\n")
+			tasks = append(tasks[:i], tasks[i+1:]...)
+		}
+	}
+	writer.Flush()
+	SaveTasks(tasks, "test.txt")
 }
 
 // ListTasks : Display a list of all the tasks
@@ -154,6 +171,8 @@ func main() {
 	if len(args) > 0 {
 		if args[0] == "ls" {
 			ListTasks()
+		} else if args[0] == "archive" {
+			ArchiveTasks()
 		} else if args[0] == "add" && len(args) > 1 {
 			AddTask("test.txt", args[1])
 		} else if (args[0] == "do" || args[0] == "undo") && len(args) > 1 {

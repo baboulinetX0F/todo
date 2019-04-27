@@ -58,6 +58,10 @@ func LoadTasks(pFilePath string) []Task {
 			if strings.Compare(parts[0], "X") == 0 {
 				task.status = true
 				for index := 1; index < len(parts); index++ {
+					// if part is a tag
+					if len(parts[index]) > 0 && parts[index][0] == '+' {
+						task.tags = append(task.tags, parts[index])
+					}
 					if index > 1 {
 						task.description += " "
 					}

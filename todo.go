@@ -189,7 +189,20 @@ func ListTasksFiltered(searchTags []string) {
 	}
 }
 
+func Init() {
+	// Get home directory environnement variable
+	homeDir := os.Getenv("HOME")
+
+	// Create .todo directory if it doesn't exists
+	if _, err := os.Stat(homeDir + "/.todo"); os.IsNotExist(err) {
+		fmt.Println("INFO : Directory " + homeDir + "/.todo does not exists")
+		fmt.Println("INFO : Creating " + homeDir + "/.todo directory")
+		os.Mkdir(homeDir+"/.todo", os.ModePerm)
+	}
+}
+
 func main() {
+	Init()
 	args := os.Args[1:]
 	if len(args) > 0 {
 		if args[0] == "ls" {

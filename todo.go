@@ -91,7 +91,7 @@ func LoadTasks(pFilePath string) []Task {
 
 // SaveTasks : Write the pFilePath file with the contents of the Tasks Array
 func SaveTasks(pTasks []Task, pFilePath string) {
-	file, err := os.OpenFile("test.txt", os.O_WRONLY, 0666)
+	file, err := os.OpenFile("todo.txt", os.O_WRONLY, 0666)
 	file.Truncate(0)
 	if err != nil {
 		log.Fatal(err)
@@ -110,7 +110,7 @@ func SaveTasks(pTasks []Task, pFilePath string) {
 
 // AddTask : Add the task passed in parameter to the todo file
 func AddTask(pFilePath string, pLineToParse string) {
-	file, err := os.OpenFile("test.txt", os.O_APPEND|os.O_WRONLY, 0666)
+	file, err := os.OpenFile("todo.txt", os.O_APPEND|os.O_WRONLY, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -124,19 +124,19 @@ func AddTask(pFilePath string, pLineToParse string) {
 
 // SetTaskStatus : Mark as done the task with the id passed in paramater
 func SetTaskStatus(pID uint16, pNewState bool) {
-	tasks := LoadTasks("test.txt")
+	tasks := LoadTasks("todo.txt")
 	if pID > uint16(len(tasks)) || pID <= 0 {
 		log.Println("ValidateTask : index out of range")
 	} else {
 		tasks[pID-1].status = pNewState
 	}
 
-	SaveTasks(tasks, "test.txt")
+	SaveTasks(tasks, "todo.txt")
 }
 
 // ArchiveTasks : remove all tasks done and store them in the archive file
 func ArchiveTasks() {
-	tasks := LoadTasks("test.txt")
+	tasks := LoadTasks("todo.txt")
 
 	// Open / Create archive file
 	file, err := os.OpenFile("archive.txt", os.O_APPEND|os.O_WRONLY, 0666)
@@ -153,16 +153,39 @@ func ArchiveTasks() {
 		}
 	}
 	writer.Flush()
-	SaveTasks(tasks, "test.txt")
+	SaveTasks(tasks, "todo.txt")
 }
 
 // ListTasks : Display a list of all the tasks
 func ListTasks() {
-	// TODO: Add filtering by tags
 	fmt.Println("Task List :")
-	tasks := LoadTasks("test.txt")
+	tasks := LoadTasks("todo.txt")
 	for _, task := range tasks {
 		PrintTask(task)
+	}
+}
+
+func ListTasksFiltered(searchTags []string) {
+	fmt.Println("Task List :")
+	tasks := LoadTasks("todo.txt")
+	for _, task := range tasks {
+		displayTask := true
+		for filterIdx := range searchTags {
+			tagFound := false
+			for i := range task.tags {
+				if task.tags[i] == searchTags[filterIdx] {
+					tagFound = true
+					break
+				}
+			}
+			if !tagFound {
+				displayTask = false
+				break
+			}
+		}
+		if displayTask {
+			PrintTask(task)
+		}
 	}
 }
 
@@ -170,11 +193,15 @@ func main() {
 	args := os.Args[1:]
 	if len(args) > 0 {
 		if args[0] == "ls" {
-			ListTasks()
+			if len(args) > 1 {
+				ListTasksFiltered(args[1:])
+			} else {
+				ListTasks()
+			}
 		} else if args[0] == "archive" {
 			ArchiveTasks()
 		} else if args[0] == "add" && len(args) > 1 {
-			AddTask("test.txt", args[1])
+			AddTask("todo.txt", args[1])
 		} else if (args[0] == "do" || args[0] == "undo") && len(args) > 1 {
 			id, casterr := strconv.ParseUint(args[1], 10, 16)
 			if casterr != nil {

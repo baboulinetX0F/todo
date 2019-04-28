@@ -217,6 +217,17 @@ func Init() {
 	todoArchivePath = todoDirPath + "/archive.txt"
 }
 
+// PrintHelp : print help / usage message
+func PrintHelp() {
+	fmt.Printf("\nUsage : todo <OPTION> <TASK> \n\n")
+	fmt.Printf("Options : \n\n")
+	fmt.Println("	todo add <TASK>		Add the task <TASK> to the list")
+	fmt.Println("	todo do <IDTASK>	Check the <IDTASK> task")
+	fmt.Println("	todo undo <IDTASK>	Uncheck the <IDTASK> task")
+	fmt.Println("	todo ls			Display all tasks")
+	fmt.Println("	todo ls <TAG>		Display all tasks containing the <TAG>")
+}
+
 func main() {
 	Init()
 	args := os.Args[1:]
@@ -230,6 +241,8 @@ func main() {
 			}
 		} else if args[0] == "archive" {
 			ArchiveTasks()
+		} else if args[0] == "help" {
+			PrintHelp()
 		} else if args[0] == "add" && len(args) > 1 {
 			AddTask(todoFilePath, args[1])
 		} else if (args[0] == "do" || args[0] == "undo") && len(args) > 1 {
@@ -243,6 +256,9 @@ func main() {
 					SetTaskStatus(uint16(id), false)
 				}
 			}
+		} else {
+			fmt.Println("ERROR : missing / wrong arguments")
+			PrintHelp()
 		}
 	}
 }

@@ -130,6 +130,13 @@ func AddTask(pFilePath string, pLineToParse string) {
 	writer.Flush()
 }
 
+// RemoveTask : Remove a task from the list
+func RemoveTask(pTaskID uint16) {
+	tasks := LoadTasks(todoFilePath)
+	tasks = append(tasks[:pTaskID-1], tasks[pTaskID:]...)
+	SaveTasks(tasks, todoFilePath)
+}
+
 // SetTaskStatus : Mark as done the task with the id passed in paramater
 func SetTaskStatus(pID uint16, pNewState bool) {
 	tasks := LoadTasks(todoFilePath)
@@ -255,6 +262,13 @@ func main() {
 				} else {
 					SetTaskStatus(uint16(id), false)
 				}
+			}
+		} else if (args[0] == "delete") && len(args) > 1 {
+			id, casterr := strconv.ParseUint(args[1], 10, 16)
+			if casterr != nil {
+				log.Fatal(casterr)
+			} else {
+				RemoveTask(uint16(id))
 			}
 		} else {
 			fmt.Println("ERROR : missing / wrong arguments")
